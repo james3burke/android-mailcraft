@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MailCraft</string>
+    <string name="title_activity_login">Sign in</string>
+</resources>
