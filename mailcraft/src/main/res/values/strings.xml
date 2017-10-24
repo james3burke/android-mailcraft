@@ -2,4 +2,6 @@
     <string name="app_name">MailCraft</string>
     <string name="title_activity_login">Sign in</string>
     <string name="title_activity_compose">ComposeActivity</string>
+
+    <string name="rationale_read_contacts">Please allow access to your contacts</string>
 </resources>

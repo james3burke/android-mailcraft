@@ -27,5 +27,9 @@ dependencies {
     compile 'com.android.support:design:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.github.james3burke:MaterialChipsInput:develop-SNAPSHOT'
+    compile 'com.fabiendevos:nanotasks:1.1.0'
+    compile 'pub.devrel:easypermissions:1.0.1'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'org.apache.commons:commons-collections4:4.0'
     testCompile 'junit:junit:4.12'
 }

@@ -1,27 +1,37 @@
 package net.roganjosh.mailcraft;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
+import android.widget.Toast;
 
+import com.nanotasks.BackgroundWork;
+import com.nanotasks.Completion;
+import com.nanotasks.Tasks;
 import com.pchmn.materialchips.ChipsInput;
 import com.pchmn.materialchips.model.Chip;
 import com.pchmn.materialchips.model.ChipInterface;
 
-import java.lang.annotation.Annotation;
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import butterknife.OnEditorAction;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
 public class ComposeActivity extends AppCompatActivity {
+
+    private final String TAG = ComposeActivity.class.getSimpleName();
+
+    ChipsInput mChipsInput;
+
+    private final String[] PERMISSIONS = {android.Manifest.permission.READ_CONTACTS};
+
+    private final int READ_CONTACTS_ALLOWED = 234;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,12 +39,8 @@ public class ComposeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_compose);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        final ChipsInput chipsInput = (ChipsInput) findViewById(R.id.ci_recipients);
-        List<Chip> contactList = new ArrayList<>();
-        contactList.add(new Chip("Bob Label", "Bob info"));
-        contactList.add(new Chip("Fred label", "Fred info"));
-        chipsInput.setFilterableList(contactList);
-        chipsInput.addChipsListener(new ChipsInput.ChipsListener() {
+        mChipsInput = (ChipsInput) findViewById(R.id.ci_recipients);
+        mChipsInput.addChipsListener(new ChipsInput.ChipsListener() {
             @Override
             public void onChipAdded(ChipInterface chip, int newSize) {
                 // chip added
@@ -60,8 +66,56 @@ public class ComposeActivity extends AppCompatActivity {
                     String[] parts = name.split("@");
                     name = parts[0];
                 }
-                chipsInput.addChip(name, charSequence.toString());
+                mChipsInput.addChip(name, charSequence.toString());
                 return true;
+            }
+        });
+        init();
+    }
+
+    protected void init() {
+        prepareContacts();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @AfterPermissionGranted(READ_CONTACTS_ALLOWED)
+    private void prepareContacts() {
+        if (EasyPermissions.hasPermissions(this, PERMISSIONS)) {
+            beginLoadContacts();
+        } else if (EasyPermissions.somePermissionPermanentlyDenied(this, Arrays.asList(PERMISSIONS))) {
+            Toast.makeText(this, "No access to contacts", Toast.LENGTH_SHORT);
+        } else {
+            EasyPermissions.requestPermissions(this, getString(R.string.rationale_read_contacts), READ_CONTACTS_ALLOWED, PERMISSIONS);
+        }
+    }
+
+    private void beginLoadContacts() {
+        Tasks.executeInBackground(this, new BackgroundWork<List<Chip>>() {
+            @Override
+            public List<Chip> doInBackground() throws Exception {
+                List<Chip> contactList = new ArrayList<>();
+                contactList.add(new Chip("Bob Label", "Bob info"));
+                contactList.add(new Chip("Fred label", "Fred info"));
+                return contactList;
+            }
+        }, new Completion<List<Chip>>() {
+            @Override
+            public void onSuccess(Context context, List<Chip> result) {
+                if (CollectionUtils.isNotEmpty(result)) {
+                    mChipsInput.setFilterableList(result);
+                } else {
+                    Log.d(TAG, "No contacts loaded");
+                }
+            }
+
+            @Override
+            public void onError(Context context, Exception e) {
+                Log.e(TAG, "Failed to load contacts", e);
             }
         });
     }
