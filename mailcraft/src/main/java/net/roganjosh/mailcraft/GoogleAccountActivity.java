@@ -2,18 +2,14 @@ package net.roganjosh.mailcraft;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -29,9 +25,6 @@ import com.google.android.gms.common.api.Status;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
-import com.nanotasks.BackgroundWork;
-import com.nanotasks.Completion;
-import com.nanotasks.Tasks;
 
 import java.util.Arrays;
 
@@ -318,6 +311,7 @@ public class GoogleAccountActivity extends AppCompatActivity implements GoogleAp
     }
 
     public void onClickRevoke(View v) {
+        // TODO put this back
         //revokeAccess();
         Intent intent = new Intent(this, ComposeActivity.class);
         startActivity(intent);
