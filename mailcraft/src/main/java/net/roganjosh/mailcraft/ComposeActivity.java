@@ -9,6 +9,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.util.Rfc822Tokenizer;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.ex.chips.BaseRecipientAdapter;
@@ -33,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -63,6 +66,33 @@ public class ComposeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mChipsInput = (RecipientEditTextView) findViewById(R.id.retv_recipients);
         mChipsInput.setTokenizer(new Rfc822Tokenizer());
+        final EditText etSubject = (EditText)findViewById(R.id.et_subject);
+        final EditText etMessage = (EditText)findViewById(R.id.et_message);
+        final WebView wvCard = (WebView)findViewById(R.id.wv_card);
+
+        String rqHtml = "<html><body><p>Text is: <b>Hello World</b><p></body></html>";
+        Intent request = getIntent();
+        if ((request != null) && (Intent.ACTION_SENDTO == request.getAction())) {
+            String rqText = request.getStringExtra(Intent.EXTRA_TEXT);
+            if (StringUtils.isNotEmpty(rqText)) {
+                etMessage.setText(rqText);
+            }
+            String rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
+            if (StringUtils.isNotEmpty(rqSubject)) {
+                etSubject.setText(rqText);
+            }
+            List<String> rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
+            // TODO subjects
+            rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
+            if (StringUtils.isNotEmpty(rqHtml)) {
+                wvCard.loadData(rqHtml, "text/html", null);
+            } else {
+                wvCard.loadData("<html><body><p>blank</p></body></html>", "text/html", "UTF-8");
+            }
+        }
+        if (StringUtils.isNotEmpty(rqHtml)) {
+            wvCard.loadData(rqHtml, "text/html", "UTF-8");
+        }
         init();
     }
 

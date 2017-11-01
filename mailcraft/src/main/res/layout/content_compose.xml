@@ -16,7 +16,29 @@
         <com.android.ex.chips.RecipientEditTextView
             android:id="@+id/retv_recipients"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_recipients"/>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/et_subject"
+            android:hint="subject"/>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/et_message"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:hint="message"
+            android:inputType="text|textCapSentences|textMultiLine|textAutoCorrect"/>
+
+        <WebView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wv_card"
+            android:background="@color/blue_grey_500"/>
 
         <Button
             android:layout_width="match_parent"
