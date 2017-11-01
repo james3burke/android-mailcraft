@@ -8,14 +8,6 @@
     tools:context="net.roganjosh.mailcraft.ComposeActivity"
     tools:showIn="@layout/activity_compose">
 
-    <!--
-    <com.pchmn.materialchips.ChipsInput
-        android:id="@+id/ci_recipients"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:hint="Enter a name" />
-        -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

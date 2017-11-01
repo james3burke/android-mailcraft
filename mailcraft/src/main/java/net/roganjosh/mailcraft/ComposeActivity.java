@@ -63,8 +63,6 @@ public class ComposeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mChipsInput = (RecipientEditTextView) findViewById(R.id.retv_recipients);
         mChipsInput.setTokenizer(new Rfc822Tokenizer());
-        BaseRecipientAdapter baseRecipientAdapter = new BaseRecipientAdapter(BaseRecipientAdapter.QUERY_TYPE_EMAIL, this);
-        mChipsInput.setAdapter(baseRecipientAdapter);
         init();
     }
 
@@ -74,38 +72,9 @@ public class ComposeActivity extends AppCompatActivity {
         String email = sharedPreferences.getString("credential_name", null);
         if (StringUtils.isNotEmpty(email)) {
             Log.d(TAG, "email " + email);
-            // Initialize credentials and service object.
-            mCredential = GoogleAccountCredential.usingOAuth2(
-                    getApplicationContext(), Arrays.asList(GmailScopes.GMAIL_COMPOSE))
-                    .setBackOff(new ExponentialBackOff());
-            mCredential.setSelectedAccountName(email);
+            mCredential = getGoogleAccountCredential(email);
             if ((mCredential != null) && (mCredential.getSelectedAccountName() != null)) {
-                Log.d(TAG, "Account credential " + mCredential.getSelectedAccountName());
-
-                HttpTransport transport = AndroidHttp.newCompatibleTransport();
-                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-                final Gmail service = new Gmail.Builder(transport, jsonFactory, mCredential)
-                        .setApplicationName(getResources().getString(R.string.app_name))
-                        .build();
-                Tasks.executeInBackground(this, new BackgroundWork<Boolean>() {
-                    @Override
-                    public Boolean doInBackground() throws Exception {
-                        sendGmailMessage(service, mCredential);
-                        return true;
-                    }
-                }, new Completion<Boolean>() {
-                    @Override
-                    public void onSuccess(Context context, Boolean result) {
-                        Toast.makeText(ComposeActivity.this, "Sent mail", Toast.LENGTH_LONG).show();
-                    }
-
-                    @Override
-                    public void onError(Context context, Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(ComposeActivity.this, "Failed! " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-
+                //testEmail(mCredential);
             } else {
                 Log.d(TAG, "No account credential");
             }
@@ -114,6 +83,42 @@ public class ComposeActivity extends AppCompatActivity {
             Intent intent = new Intent(this, GoogleAccountActivity.class);
             startActivity(intent);
         }
+    }
+
+    private void testEmail(final GoogleAccountCredential credential) {
+        Tasks.executeInBackground(this, new BackgroundWork<Boolean>() {
+            @Override
+            public Boolean doInBackground() throws Exception {
+                Gmail service = createGmailService(credential);
+                sendGmailMessage(service, credential);
+                return true;
+            }
+        }, new Completion<Boolean>() {
+            @Override
+            public void onSuccess(Context context, Boolean result) {
+                Toast.makeText(ComposeActivity.this, "Sent mail", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(Context context, Exception e) {
+                e.printStackTrace();
+                Toast.makeText(ComposeActivity.this, "Failed! " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private GoogleAccountCredential getGoogleAccountCredential(String accountName) {
+        return GoogleAccountCredential.usingOAuth2(
+                getApplicationContext(), Arrays.asList(GmailScopes.GMAIL_COMPOSE))
+                .setBackOff(new ExponentialBackOff()).setSelectedAccountName(accountName);
+    }
+
+    private Gmail createGmailService(GoogleAccountCredential credential) {
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        return new Gmail.Builder(transport, jsonFactory, mCredential)
+                .setApplicationName(getResources().getString(R.string.app_name))
+                .build();
     }
 
     @Override
@@ -125,7 +130,8 @@ public class ComposeActivity extends AppCompatActivity {
     @AfterPermissionGranted(READ_CONTACTS_ALLOWED)
     private void prepareContacts() {
         if (EasyPermissions.hasPermissions(this, PERMISSIONS)) {
-            // do stuff
+            BaseRecipientAdapter baseRecipientAdapter = new BaseRecipientAdapter(BaseRecipientAdapter.QUERY_TYPE_EMAIL, this);
+            mChipsInput.setAdapter(baseRecipientAdapter);
         } else if (EasyPermissions.somePermissionPermanentlyDenied(this, Arrays.asList(PERMISSIONS))) {
             Toast.makeText(this, "No access to contacts", Toast.LENGTH_SHORT);
         } else {

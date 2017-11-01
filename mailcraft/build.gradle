@@ -30,7 +30,6 @@ dependencies {
     compile('com.google.apis:google-api-services-gmail:v1-rev62-1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    //compile 'com.github.james3burke:MaterialChipsInput:develop-SNAPSHOT'
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support:design:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
