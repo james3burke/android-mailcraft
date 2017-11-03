@@ -47,6 +47,7 @@ public class GoogleAccountActivity extends AppCompatActivity implements GoogleAp
         setContentView(R.layout.activity_google_account);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Views
         mStatusTextView = (TextView) findViewById(R.id.status);

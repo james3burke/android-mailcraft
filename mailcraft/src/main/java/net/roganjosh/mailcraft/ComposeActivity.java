@@ -8,7 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.util.Rfc822Tokenizer;
 import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -110,9 +111,29 @@ public class ComposeActivity extends AppCompatActivity {
             }
         } else {
             Toast.makeText(this, "No previous signin", Toast.LENGTH_LONG);
-            Intent intent = new Intent(this, GoogleAccountActivity.class);
-            startActivity(intent);
+            openManageAccount();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.compose, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(TAG, "Menu clicked: " + item);
+        if (R.id.action_manage_account == item.getItemId()) {
+            openManageAccount();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void openManageAccount() {
+        Intent intent = new Intent(this, GoogleAccountActivity.class);
+        startActivity(intent);
     }
 
     private void testEmail(final GoogleAccountCredential credential) {
@@ -245,10 +266,5 @@ public class ComposeActivity extends AppCompatActivity {
         System.out.println("Message id: " + message.getId());
         System.out.println(message.toPrettyString());
         return message;
-    }
-
-    public void clickSignIn(View v) {
-        Intent intent = new Intent(this, GoogleAccountActivity.class);
-        startActivity(intent);
     }
 }

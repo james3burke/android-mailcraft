@@ -40,12 +40,6 @@
             android:id="@+id/wv_card"
             android:background="@color/blue_grey_500"/>
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="clickSignIn"
-            android:text="Back to signin"/>
-
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

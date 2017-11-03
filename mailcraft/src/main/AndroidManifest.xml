@@ -31,7 +31,8 @@
         <activity
             android:name=".GoogleAccountActivity"
             android:label="@string/title_activity_google_account"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".ComposeActivity"></activity>
     </application>
 
 </manifest>
