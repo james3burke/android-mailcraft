@@ -6,16 +6,20 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.util.Rfc822Tokenizer;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.ex.chips.BaseRecipientAdapter;
 import com.android.ex.chips.RecipientEditTextView;
+import com.android.ex.chips.recipientchip.DrawableRecipientChip;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -31,18 +35,25 @@ import com.nanotasks.BackgroundWork;
 import com.nanotasks.Completion;
 import com.nanotasks.Tasks;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.Session;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -51,7 +62,11 @@ public class ComposeActivity extends AppCompatActivity {
 
     private final String TAG = ComposeActivity.class.getSimpleName();
 
-    RecipientEditTextView mChipsInput;
+    private RecipientEditTextView mChipsInput;
+    private EditText mSubject;
+    private EditText mMessage;
+    private WebView mWebCard;
+    private String mHtmlContent;
 
     private final String[] PERMISSIONS = {android.Manifest.permission.READ_CONTACTS};
 
@@ -67,37 +82,30 @@ public class ComposeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mChipsInput = (RecipientEditTextView) findViewById(R.id.retv_recipients);
         mChipsInput.setTokenizer(new Rfc822Tokenizer());
-        final EditText etSubject = (EditText)findViewById(R.id.et_subject);
-        final EditText etMessage = (EditText)findViewById(R.id.et_message);
-        final WebView wvCard = (WebView)findViewById(R.id.wv_card);
+        mChipsInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //
+            }
 
-        String rqHtml = "<html><body><p>Text is: <b>Hello World</b><p></body></html>";
-        Intent request = getIntent();
-        if ((request != null) && (Intent.ACTION_SENDTO == request.getAction())) {
-            String rqText = request.getStringExtra(Intent.EXTRA_TEXT);
-            if (StringUtils.isNotEmpty(rqText)) {
-                etMessage.setText(rqText);
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                mChipsInput.setError(null);
             }
-            String rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
-            if (StringUtils.isNotEmpty(rqSubject)) {
-                etSubject.setText(rqText);
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //
             }
-            List<String> rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
-            // TODO subjects
-            rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
-            if (StringUtils.isNotEmpty(rqHtml)) {
-                wvCard.loadData(rqHtml, "text/html", null);
-            } else {
-                wvCard.loadData("<html><body><p>blank</p></body></html>", "text/html", "UTF-8");
-            }
-        }
-        if (StringUtils.isNotEmpty(rqHtml)) {
-            wvCard.loadData(rqHtml, "text/html", "UTF-8");
-        }
-        init();
+        });
+        mSubject = (EditText)findViewById(R.id.et_subject);
+        mMessage = (EditText)findViewById(R.id.et_message);
+        mWebCard = (WebView)findViewById(R.id.wv_card);
+
+        init(getIntent());
     }
 
-    protected void init() {
+    protected void init(Intent request) {
         prepareContacts();
         SharedPreferences sharedPreferences = getSharedPreferences("APP", MODE_PRIVATE);
         String email = sharedPreferences.getString("credential_name", null);
@@ -109,9 +117,32 @@ public class ComposeActivity extends AppCompatActivity {
             } else {
                 Log.d(TAG, "No account credential");
             }
+            // TODO remove
+            String rqHtml = "<html><body><p>Text is: <b>Hello World</b><p></body></html>";
+            if ((request != null) && (Intent.ACTION_SENDTO == request.getAction())) {
+                // TODO this is probably the alt text for the html - not to be displayed?
+                String rqText = request.getStringExtra(Intent.EXTRA_TEXT);
+                if (StringUtils.isNotEmpty(rqText)) {
+                    mMessage.setText(rqText);
+                }
+                String rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
+                if (StringUtils.isNotEmpty(rqSubject)) {
+                    mSubject.setText(rqText);
+                }
+                List<String> rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
+                Log.d(TAG, "Recipients list: " + rqRecipients);
+                // TODO subjects
+                rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
+            }
+            if (StringUtils.isNotEmpty(rqHtml)) {
+                mHtmlContent = rqHtml;
+                mWebCard.loadData(rqHtml, "text/html", "UTF-8");
+            } else {
+                mWebCard.setVisibility(View.GONE);
+            }
         } else {
             Toast.makeText(this, "No previous signin", Toast.LENGTH_LONG);
-            openManageAccount();
+            doActionManageAccount();
         }
     }
 
@@ -125,37 +156,33 @@ public class ComposeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.d(TAG, "Menu clicked: " + item);
         if (R.id.action_manage_account == item.getItemId()) {
-            openManageAccount();
+            doActionManageAccount();
+            return true;
+        } else if (R.id.action_send_email == item.getItemId()) {
+            doActionSendEmail();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    public void openManageAccount() {
+    public void doActionManageAccount() {
         Intent intent = new Intent(this, GoogleAccountActivity.class);
         startActivity(intent);
     }
 
-    private void testEmail(final GoogleAccountCredential credential) {
-        Tasks.executeInBackground(this, new BackgroundWork<Boolean>() {
-            @Override
-            public Boolean doInBackground() throws Exception {
-                Gmail service = createGmailService(credential);
-                sendGmailMessage(service, credential);
-                return true;
+    public void doActionSendEmail() {
+        String sender = mCredential.getSelectedAccountName();
+        MailModel mailModel = validateAndBuildMailModel(sender);
+        if (mailModel != null) {
+            try {
+                MimeMessage email = createEmail(mailModel);
+                if (email != null) {
+                    sendGmail(mCredential, email);
+                }
+            } catch (MessagingException e) {
+                Toast.makeText(this, "Failed to build email", Toast.LENGTH_LONG);
             }
-        }, new Completion<Boolean>() {
-            @Override
-            public void onSuccess(Context context, Boolean result) {
-                Toast.makeText(ComposeActivity.this, "Sent mail", Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onError(Context context, Exception e) {
-                e.printStackTrace();
-                Toast.makeText(ComposeActivity.this, "Failed! " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        }
     }
 
     private GoogleAccountCredential getGoogleAccountCredential(String accountName) {
@@ -194,14 +221,36 @@ public class ComposeActivity extends AppCompatActivity {
      * GMAIL
      */
 
-    public void sendGmailMessage(Gmail service, GoogleAccountCredential credential) {
-        try {
-            MimeMessage mm = createEmail("shops@roganjosh.net", credential.getSelectedAccountName(), "hello", "test");
-            sendMessage(service, "me", mm);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } catch (MessagingException e) {
-            e.printStackTrace();
+    public void sendGmail(GoogleAccountCredential credential, MimeMessage message) {
+        asyncSendGmail(createGmailService(credential), credential.getSelectedAccountName(), message);
+    }
+
+    public void asyncSendGmail(final Gmail service, final String accountName, final MimeMessage message) {
+        Tasks.executeInBackground(this, new BackgroundWork<Message>() {
+            @Override
+            public Message doInBackground() throws Exception {
+                return sendMessage(service, accountName, message);
+            }
+        }, new Completion<Message>() {
+            @Override
+            public void onSuccess(Context context, Message result) {
+                Toast.makeText(ComposeActivity.this, "Message sent", Toast.LENGTH_LONG).show();
+                finish();
+            }
+            @Override
+            public void onError(Context context, Exception e) {
+                Toast.makeText(ComposeActivity.this, "Failed to send message", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public static MimeMessage createEmail(MailModel model) throws MessagingException {
+        String content = model.getMessage();
+        // TODO add user message to html and alt
+        if (StringUtils.isNotEmpty(model.getHtmlContent())) {
+            return createMultipartEmail(model.getRecipients(), model.getSender(), model.getSubject(), model.getMessage(), model.getHtmlContent());
+        } else {
+            return createSimpleEmail(model.getRecipients(), model.getSender(), model.getSubject(), content);
         }
     }
 
@@ -215,17 +264,74 @@ public class ComposeActivity extends AppCompatActivity {
      * @return the MimeMessage to be used to send email
      * @throws MessagingException
      */
-    public static MimeMessage createEmail(String to, String from, String subject, String bodyText) throws MessagingException {
+    public static MimeMessage createSimpleEmail(List<InternetAddress> to, InternetAddress from, String subject, String bodyText) throws MessagingException {
         Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
 
         MimeMessage email = new MimeMessage(session);
-
-        email.setFrom(new InternetAddress(from));
-        email.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
-        email.setSubject(subject);
+        email = addHeaderInfo(email, from, to, subject);
         email.setText(bodyText);
         return email;
+    }
+
+    public static MimeMessage createMultipartEmail(List<InternetAddress> to, InternetAddress from, String subject, String bodyText, String bodyContent) throws MessagingException {
+        Properties props = new Properties();
+        Session session = Session.getDefaultInstance(props, null);
+
+        MimeMessage email = new MimeMessage(session);
+        email = addHeaderInfo(email, from, to, subject);
+        email.setContent(buildMimeContent(bodyText, bodyContent));
+
+        return email;
+    }
+
+    public static MimeMessage addHeaderInfo(MimeMessage email, InternetAddress from, List<InternetAddress> recipients, String subject) throws MessagingException {
+
+        email.setSubject(subject, "UTF-8");
+
+        email.setFrom(from);
+        for(InternetAddress recipient : recipients) {
+            if (StringUtils.isNotBlank(recipient.getAddress())) {
+                try {
+                    recipient.validate();
+                    email.addRecipient(javax.mail.Message.RecipientType.TO, recipient);
+                } catch (AddressException ae) {
+                    throw new MessagingException("Invalid email address \"" + recipient.getAddress() + "\" for contact " + recipient.getPersonal());
+                }
+            } else {
+                throw new MessagingException("No email address selected for contact " + recipient.getPersonal());
+            }
+        }
+
+        return email;
+    }
+
+    public static MimeMultipart buildMimeContent(String textEmailContent, String htmlEmailContent) throws MessagingException {
+        MimeMultipart cover = new MimeMultipart("alternative");
+
+        BodyPart htmlPart = new MimeBodyPart();
+        htmlPart.setContent(htmlEmailContent, "text/html; charset=utf-8");
+
+        BodyPart textPart = null;
+        if (StringUtils.isNotEmpty(textEmailContent)) {
+            textPart = new MimeBodyPart();
+            textPart.setContent(textEmailContent, "text/plain; charset=utf-8");
+        }
+
+        if (textPart != null) {
+            cover.addBodyPart(textPart);
+        }
+        cover.addBodyPart(htmlPart);
+
+        // put the content in a wrapper
+        MimeBodyPart altWrapper = new MimeBodyPart();
+        altWrapper.setContent(cover);
+
+        // put the wrapper in the main container (related)
+        MimeMultipart content = new MimeMultipart("related");
+        content.addBodyPart(altWrapper);
+
+        return content;
     }
 
     /**
@@ -261,10 +367,53 @@ public class ComposeActivity extends AppCompatActivity {
     public static Message sendMessage(Gmail service, String userId, MimeMessage emailContent)
             throws MessagingException, IOException, UserRecoverableAuthIOException {
         Message message = createMessageWithEmail(emailContent);
-        message = service.users().messages().send(userId, message).execute();
+        return service.users().messages().send(userId, message).execute();
+    }
 
-        System.out.println("Message id: " + message.getId());
-        System.out.println(message.toPrettyString());
-        return message;
+    public MailModel validateAndBuildMailModel(String sender) {
+        MailModel mailModel = new MailModel();
+        try {
+            mailModel.setSender(new InternetAddress(sender));
+        } catch (AddressException e) {
+            Toast.makeText(this, "Your account is not able to send email", Toast.LENGTH_LONG);
+            return null;
+        }
+        List<InternetAddress> recipients = validateAndBuildRecipients();
+        if (CollectionUtils.isNotEmpty(recipients)) {
+            mailModel.setRecipients(recipients);
+        } else {
+            return null;
+        }
+        String subject = mSubject.getText().toString();
+        if (StringUtils.isNotEmpty(subject)) {
+            mailModel.setSubject(subject);
+        }
+        if (StringUtils.isNotEmpty(mHtmlContent)) {
+            mailModel.setHtmlContent(mHtmlContent);
+        }
+        return mailModel;
+    }
+
+    private List<InternetAddress> validateAndBuildRecipients() {
+        DrawableRecipientChip[] chips = mChipsInput.getRecipients();
+        if ((chips != null) && (chips.length > 0)) {
+            List<InternetAddress> result = new ArrayList<>();
+            for (DrawableRecipientChip chip : chips) {
+                try {
+                    InternetAddress address = new InternetAddress(chip.getEntry().getDestination(), chip.getEntry().getDisplayName());
+                    result.add(address);
+                } catch (UnsupportedEncodingException e) {
+                    // TODO string
+                    mChipsInput.setError("Invalid address");
+                }
+            }
+            if (CollectionUtils.isNotEmpty(result)) {
+                return  result;
+            }
+        } else {
+            // TODO string
+            mChipsInput.setError("No recipients");
+        }
+        return null;
     }
 }
