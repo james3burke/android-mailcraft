@@ -77,6 +77,63 @@ public class ComposeActivity extends AppCompatActivity {
 
     GoogleAccountCredential mCredential;
 
+    private final String testMessage = "<html xmlns=\"http://www .w3.org/1999/xhtml\">\n" +
+            "<body bgcolor=\"fbfbfb\" style=\"font-size:12px\" class=\"linkmail\" id=\"android_9024d3ec-5bf9-4241-9a5a-a5dc6933c0ab\">\n" +
+            "\n" +
+            "    <p style=\"font-size: 1.6em;\" class=\"message-item\">Sent by LinkMail</p>\n" +
+            "\n" +
+            "<center style=\"background-color: #fbfbfb;width: 100%;min-width:500px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%; padding-top: 10px; padding-bottom: 10px;border-top: dashed 2px;\">\n" +
+            "    <br/>\n" +
+            "\n" +
+            "    <table style=\"border-collapse:collapse;border-spacing: 0;Margin-left:auto;Margin-right: auto;width:500px;padding:0;border:0\">\n" +
+            "        <tbody>\n" +
+            "        <!-- image container -->\n" +
+            "        <tr>\n" +
+            "            <td style=\"background-color:#eeeeee;padding:0\" align=\"center\">\n" +
+            "                <img style=\"max-width:500px;background-color:black;display:block\" src=\"http://www.barchick.com/wp-content/uploads/2016/09/Corazon-1-1.jpg\" class=\"page-img\"/>\n" +
+            "            </td>\n" +
+            "        </tr>\n" +
+            "\n" +
+            "        <!-- title container -->\n" +
+            "        <tr>\n" +
+            "            <td style=\"background-color:#306850;color:#ffffff;padding:0;padding-left:8px;padding-right:8px\">\n" +
+            "                <H1 style=\"margin:0;padding:0;font-weight: 700;letter-spacing: - 0.03em;-webkit-font-smoothing: antialiased;font-size: 2em ;font-family: sans-serif;\" class=\"title\">Corazon Taqueria</H1>\n" +
+            "            </td>\n" +
+            "        </tr>\n" +
+            "\n" +
+            "        <!-- snippet container -->\n" +
+            "        <tr>\n" +
+            "            <td style=\"background-color:#e0e8e0;color:#212121;padding:16px;padding-bottom:0px\">\n" +
+            "                <p style=\"margin:0;-moz-osx-font-smoothing: grayscale;font-family: sans-serif; -webkit-font-smoothing: antialiased;font-size: 1.6em;font-weight:500;line-height: 24px\" class=\"description\">\n" +
+            "<i>BarChick loves a Mexican, so she&#39;ll be first in line when this new taqueria opens its doors on Poland Street this November. There&#39;ll be ten signature tacos on the menu - from 12-hour slow roast lamb rib to House made green chorizo. Yum.</i></p>\n" +
+            "            </td>\n" +
+            "        <tr>\n" +
+            "\n" +
+            "        <!-- read more container -->\n" +
+            "        <tr>\n" +
+            "            <td style=\"background-color:#e0e8e0;color:#212121;padding:16px;\" align=\"right\">\n" +
+            "                <p style=\"margin:0;-moz-osx-font-smoothing: grayscale;font-family: sans-serif;-webkit-font-smoothing: antialiased;line-height: 16px;\">\n" +
+            "                    <a style=\"color:#212121;font-size:16px;\" href=\"http://www.barchick.com/find-a-bar/london/corazon-taqueria\" class=\"page-url\">Read more on barchick.com</a>\n" +
+            "                    <!-- page icon -->\n" +
+            "                </p>\n" +
+            "            </td>\n" +
+            "        </tr>\n" +
+            "\n" +
+            "        <!-- Dates container -->\n" +
+            "\n" +
+            "        <!-- map container -->\n" +
+            "\n" +
+            "        <!-- address container -->\n" +
+            "\n" +
+            "        </tbody>\n" +
+            "    </table>\n" +
+            "</center>\n" +
+            "<br/>\n" +
+            "<div class=\"text-footer\" style=\"color:#646464;font-size:12px;font-family:sans-serif;line-height:20px;text-align:center;\">This email was created using <a href=\"http://www.linkmailapp.net\" style=\"color:#646464;text-decoration:underline;font-weight:bold;\" class=\"link-footer\"><span class=\"link-footer\" style=\"color:#646464;text-decoration:underline;font-weight:bold;\">LinkMail</span></a>\n" +
+            "</div>\n" +
+            "</body>\n" +
+            "</html>";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,7 +178,7 @@ public class ComposeActivity extends AppCompatActivity {
                 Log.d(TAG, "No account credential");
             }
             String rqText = "Hello world";
-            String rqHtml = "<html><body><p>Hello world</p></body></html>";
+            String rqHtml = testMessage; //"<html><body><p>Hello world</p></body></html>";
             if ((request != null) && (Intent.ACTION_SENDTO == request.getAction())) {
                 rqText = request.getStringExtra(Intent.EXTRA_TEXT);
                 String rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
