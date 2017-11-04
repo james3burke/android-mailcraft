@@ -13,6 +13,7 @@ public class MailModel {
     private List<InternetAddress> recipients;
     private String subject;
     private String message;
+    private String textContent;
     private String htmlContent;
 
     public InternetAddress getSender() {
@@ -45,6 +46,14 @@ public class MailModel {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
     }
 
     public String getHtmlContent() {

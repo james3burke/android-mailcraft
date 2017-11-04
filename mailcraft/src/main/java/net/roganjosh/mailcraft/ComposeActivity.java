@@ -36,6 +36,7 @@ import com.nanotasks.Completion;
 import com.nanotasks.Tasks;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -66,7 +67,9 @@ public class ComposeActivity extends AppCompatActivity {
     private EditText mSubject;
     private EditText mMessage;
     private WebView mWebCard;
+    private String mAltText;
     private String mHtmlContent;
+    private boolean mSendingInProgress = false;
 
     private final String[] PERMISSIONS = {android.Manifest.permission.READ_CONTACTS};
 
@@ -117,28 +120,28 @@ public class ComposeActivity extends AppCompatActivity {
             } else {
                 Log.d(TAG, "No account credential");
             }
-            // TODO remove
-            String rqHtml = "<html><body><p>Text is: <b>Hello World</b><p></body></html>";
+            String rqText = "Hello world";
+            String rqHtml = "<html><body><p>Hello world</p></body></html>";
             if ((request != null) && (Intent.ACTION_SENDTO == request.getAction())) {
-                // TODO this is probably the alt text for the html - not to be displayed?
-                String rqText = request.getStringExtra(Intent.EXTRA_TEXT);
-                if (StringUtils.isNotEmpty(rqText)) {
-                    mMessage.setText(rqText);
-                }
+                rqText = request.getStringExtra(Intent.EXTRA_TEXT);
                 String rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
                 if (StringUtils.isNotEmpty(rqSubject)) {
                     mSubject.setText(rqText);
                 }
                 List<String> rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
                 Log.d(TAG, "Recipients list: " + rqRecipients);
-                // TODO subjects
+                // TODO populate recipients as chips
                 rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
             }
             if (StringUtils.isNotEmpty(rqHtml)) {
                 mHtmlContent = rqHtml;
+                mAltText = rqText;
                 mWebCard.loadData(rqHtml, "text/html", "UTF-8");
             } else {
                 mWebCard.setVisibility(View.GONE);
+                if (StringUtils.isNotEmpty(rqText)) {
+                    mMessage.setText(rqText);
+                }
             }
         } else {
             Toast.makeText(this, "No previous signin", Toast.LENGTH_LONG);
@@ -158,7 +161,7 @@ public class ComposeActivity extends AppCompatActivity {
         if (R.id.action_manage_account == item.getItemId()) {
             doActionManageAccount();
             return true;
-        } else if (R.id.action_send_email == item.getItemId()) {
+        } else if ((R.id.action_send_email == item.getItemId()) && (!mSendingInProgress)) {
             doActionSendEmail();
             return true;
         }
@@ -171,6 +174,7 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     public void doActionSendEmail() {
+        mSendingInProgress = true;
         String sender = mCredential.getSelectedAccountName();
         MailModel mailModel = validateAndBuildMailModel(sender);
         if (mailModel != null) {
@@ -178,11 +182,13 @@ public class ComposeActivity extends AppCompatActivity {
                 MimeMessage email = createEmail(mailModel);
                 if (email != null) {
                     sendGmail(mCredential, email);
+                    return;
                 }
             } catch (MessagingException e) {
                 Toast.makeText(this, "Failed to build email", Toast.LENGTH_LONG);
             }
         }
+        mSendingInProgress = false;
     }
 
     private GoogleAccountCredential getGoogleAccountCredential(String accountName) {
@@ -240,17 +246,26 @@ public class ComposeActivity extends AppCompatActivity {
             @Override
             public void onError(Context context, Exception e) {
                 Toast.makeText(ComposeActivity.this, "Failed to send message", Toast.LENGTH_LONG).show();
+                mSendingInProgress = false;
             }
         });
     }
 
     public static MimeMessage createEmail(MailModel model) throws MessagingException {
-        String content = model.getMessage();
-        // TODO add user message to html and alt
+        if (StringUtils.isNotEmpty(model.getMessage())) {
+            if (StringUtils.isNotEmpty(model.getTextContent())) {
+                model.setTextContent(model.getMessage() + "\n" + model.getTextContent());
+            } else {
+                model.setTextContent(model.getMessage());
+            }
+            if (StringUtils.isNotEmpty(model.getHtmlContent())) {
+                model.setHtmlContent(model.getHtmlContent().replace("<body>", "<body><p>" + StringEscapeUtils.escapeHtml4(model.getMessage()) + "</p>"));
+            }
+        }
         if (StringUtils.isNotEmpty(model.getHtmlContent())) {
-            return createMultipartEmail(model.getRecipients(), model.getSender(), model.getSubject(), model.getMessage(), model.getHtmlContent());
+            return createMultipartEmail(model.getRecipients(), model.getSender(), model.getSubject(), model.getTextContent(), model.getHtmlContent());
         } else {
-            return createSimpleEmail(model.getRecipients(), model.getSender(), model.getSubject(), content);
+            return createSimpleEmail(model.getRecipients(), model.getSender(), model.getSubject(), model.getTextContent());
         }
     }
 
@@ -388,8 +403,15 @@ public class ComposeActivity extends AppCompatActivity {
         if (StringUtils.isNotEmpty(subject)) {
             mailModel.setSubject(subject);
         }
+        String message = mMessage.getText().toString();
+        if (StringUtils.isNotEmpty(message)) {
+            mailModel.setMessage(message);
+        }
         if (StringUtils.isNotEmpty(mHtmlContent)) {
             mailModel.setHtmlContent(mHtmlContent);
+        }
+        if (StringUtils.isNotEmpty(mAltText)) {
+            mailModel.setTextContent(mAltText);
         }
         return mailModel;
     }
