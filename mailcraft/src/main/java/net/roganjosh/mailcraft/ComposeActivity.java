@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.android.ex.chips.BaseRecipientAdapter;
 import com.android.ex.chips.RecipientEditTextView;
+import com.android.ex.chips.RecipientEntry;
 import com.android.ex.chips.recipientchip.DrawableRecipientChip;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -61,6 +63,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class ComposeActivity extends AppCompatActivity {
 
+    private static final String MESSAGE_TEXT = "MessageText";
     private final String TAG = ComposeActivity.class.getSimpleName();
 
     private RecipientEditTextView mChipsInput;
@@ -77,62 +80,7 @@ public class ComposeActivity extends AppCompatActivity {
 
     GoogleAccountCredential mCredential;
 
-    private final String testMessage = "<html xmlns=\"http://www .w3.org/1999/xhtml\">\n" +
-            "<body bgcolor=\"fbfbfb\" style=\"font-size:12px\" class=\"linkmail\" id=\"android_9024d3ec-5bf9-4241-9a5a-a5dc6933c0ab\">\n" +
-            "\n" +
-            "    <p style=\"font-size: 1.6em;\" class=\"message-item\">Sent by LinkMail</p>\n" +
-            "\n" +
-            "<center style=\"background-color: #fbfbfb;width: 100%;min-width:500px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%; padding-top: 10px; padding-bottom: 10px;border-top: dashed 2px;\">\n" +
-            "    <br/>\n" +
-            "\n" +
-            "    <table style=\"border-collapse:collapse;border-spacing: 0;Margin-left:auto;Margin-right: auto;width:500px;padding:0;border:0\">\n" +
-            "        <tbody>\n" +
-            "        <!-- image container -->\n" +
-            "        <tr>\n" +
-            "            <td style=\"background-color:#eeeeee;padding:0\" align=\"center\">\n" +
-            "                <img style=\"max-width:500px;background-color:black;display:block\" src=\"http://www.barchick.com/wp-content/uploads/2016/09/Corazon-1-1.jpg\" class=\"page-img\"/>\n" +
-            "            </td>\n" +
-            "        </tr>\n" +
-            "\n" +
-            "        <!-- title container -->\n" +
-            "        <tr>\n" +
-            "            <td style=\"background-color:#306850;color:#ffffff;padding:0;padding-left:8px;padding-right:8px\">\n" +
-            "                <H1 style=\"margin:0;padding:0;font-weight: 700;letter-spacing: - 0.03em;-webkit-font-smoothing: antialiased;font-size: 2em ;font-family: sans-serif;\" class=\"title\">Corazon Taqueria</H1>\n" +
-            "            </td>\n" +
-            "        </tr>\n" +
-            "\n" +
-            "        <!-- snippet container -->\n" +
-            "        <tr>\n" +
-            "            <td style=\"background-color:#e0e8e0;color:#212121;padding:16px;padding-bottom:0px\">\n" +
-            "                <p style=\"margin:0;-moz-osx-font-smoothing: grayscale;font-family: sans-serif; -webkit-font-smoothing: antialiased;font-size: 1.6em;font-weight:500;line-height: 24px\" class=\"description\">\n" +
-            "<i>BarChick loves a Mexican, so she&#39;ll be first in line when this new taqueria opens its doors on Poland Street this November. There&#39;ll be ten signature tacos on the menu - from 12-hour slow roast lamb rib to House made green chorizo. Yum.</i></p>\n" +
-            "            </td>\n" +
-            "        <tr>\n" +
-            "\n" +
-            "        <!-- read more container -->\n" +
-            "        <tr>\n" +
-            "            <td style=\"background-color:#e0e8e0;color:#212121;padding:16px;\" align=\"right\">\n" +
-            "                <p style=\"margin:0;-moz-osx-font-smoothing: grayscale;font-family: sans-serif;-webkit-font-smoothing: antialiased;line-height: 16px;\">\n" +
-            "                    <a style=\"color:#212121;font-size:16px;\" href=\"http://www.barchick.com/find-a-bar/london/corazon-taqueria\" class=\"page-url\">Read more on barchick.com</a>\n" +
-            "                    <!-- page icon -->\n" +
-            "                </p>\n" +
-            "            </td>\n" +
-            "        </tr>\n" +
-            "\n" +
-            "        <!-- Dates container -->\n" +
-            "\n" +
-            "        <!-- map container -->\n" +
-            "\n" +
-            "        <!-- address container -->\n" +
-            "\n" +
-            "        </tbody>\n" +
-            "    </table>\n" +
-            "</center>\n" +
-            "<br/>\n" +
-            "<div class=\"text-footer\" style=\"color:#646464;font-size:12px;font-family:sans-serif;line-height:20px;text-align:center;\">This email was created using <a href=\"http://www.linkmailapp.net\" style=\"color:#646464;text-decoration:underline;font-weight:bold;\" class=\"link-footer\"><span class=\"link-footer\" style=\"color:#646464;text-decoration:underline;font-weight:bold;\">LinkMail</span></a>\n" +
-            "</div>\n" +
-            "</body>\n" +
-            "</html>";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,10 +110,10 @@ public class ComposeActivity extends AppCompatActivity {
         mMessage = (EditText)findViewById(R.id.et_message);
         mWebCard = (WebView)findViewById(R.id.wv_card);
 
-        init(getIntent());
+        init(getIntent(), savedInstanceState);
     }
 
-    protected void init(Intent request) {
+    protected void init(Intent request, Bundle savedInstanceState) {
         prepareContacts();
         SharedPreferences sharedPreferences = getSharedPreferences("APP", MODE_PRIVATE);
         String email = sharedPreferences.getString("credential_name", null);
@@ -177,18 +125,39 @@ public class ComposeActivity extends AppCompatActivity {
             } else {
                 Log.d(TAG, "No account credential");
             }
-            String rqText = "Hello world";
-            String rqHtml = testMessage; //"<html><body><p>Hello world</p></body></html>";
-            if ((request != null) && (Intent.ACTION_SENDTO == request.getAction())) {
+            String rqText = null;
+            String rqHtml = null;
+            String rqSubject = null;
+            List<String> rqRecipients = null;
+            String rqMessage = null;
+            if ((request != null) && (Intent.ACTION_SEND == request.getAction())) {
+                Log.d(TAG, "Receiving send intent");
                 rqText = request.getStringExtra(Intent.EXTRA_TEXT);
-                String rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
-                if (StringUtils.isNotEmpty(rqSubject)) {
-                    mSubject.setText(rqText);
+                rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
+                rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
+                rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
+                if (StringUtils.isEmpty(rqHtml)) {
+                    rqMessage = rqText;
+                    rqText = null;
+                } else {
+                    rqMessage = null;
                 }
-                List<String> rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
+            } else if (savedInstanceState != null) {
+                Log.d(TAG, "Restoring state");
+                rqText = savedInstanceState.getString(Intent.EXTRA_TEXT);
+                rqSubject = savedInstanceState.getString(Intent.EXTRA_SUBJECT);
+                rqRecipients = savedInstanceState.getStringArrayList(Intent.EXTRA_EMAIL);
+                rqHtml = savedInstanceState.getString(Intent.EXTRA_HTML_TEXT);
+                rqMessage = savedInstanceState.getString(MESSAGE_TEXT);
+            } else {
+                Log.d(TAG, "OnCreate with no intent or state");
+            }
+            if (CollectionUtils.isNotEmpty(rqRecipients)) {
                 Log.d(TAG, "Recipients list: " + rqRecipients);
                 // TODO populate recipients as chips
-                rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
+            }
+            if (StringUtils.isNotEmpty(rqSubject)) {
+                mSubject.setText(rqSubject);
             }
             if (StringUtils.isNotEmpty(rqHtml)) {
                 mHtmlContent = rqHtml;
@@ -196,14 +165,65 @@ public class ComposeActivity extends AppCompatActivity {
                 mWebCard.loadData(rqHtml, "text/html", "UTF-8");
             } else {
                 mWebCard.setVisibility(View.GONE);
-                if (StringUtils.isNotEmpty(rqText)) {
-                    mMessage.setText(rqText);
-                }
+            }
+            if (rqMessage != null) {
+                mMessage.setText(rqMessage);
             }
         } else {
             Toast.makeText(this, "No previous signin", Toast.LENGTH_LONG);
             doActionManageAccount();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (StringUtils.isNotEmpty(mAltText)) {
+            outState.putString(Intent.EXTRA_TEXT, mAltText);
+        } else {
+            outState.remove(Intent.EXTRA_TEXT);
+        }
+        if (StringUtils.isNotEmpty(mHtmlContent)) {
+            Log.d(TAG, "Saving instance state");
+            outState.putString(Intent.EXTRA_HTML_TEXT, mHtmlContent);
+        } else {
+            Log.d(TAG, "Clearing instance state");
+            outState.remove(Intent.EXTRA_HTML_TEXT);
+        }
+        /*
+        if (mSubject.getText() != null) {
+            outState.putString(Intent.EXTRA_SUBJECT, mSubject.getText().toString());
+        } else {
+            outState.remove(Intent.EXTRA_SUBJECT);
+        }
+        if (mMessage.getText() != null) {
+            outState.putString(MESSAGE_TEXT, mMessage.getText().toString());
+        } else {
+            outState.remove(MESSAGE_TEXT);
+        }
+        */
+        /*
+        boolean clearEmails = true;
+        if ((mChipsInput.getRecipients() != null) && (mChipsInput.getRecipients().length > 0)) {
+            List<InternetAddress> recipients = validateAndBuildRecipients(false);
+            if (CollectionUtils.isNotEmpty(recipients)) {
+                List<String> emails = new ArrayList<>();
+                for (InternetAddress recipient : recipients) {
+                    emails.add(recipient.toString());
+                }
+                outState.putStringArray(Intent.EXTRA_EMAIL, emails.toArray(new String[emails.size()]));
+                clearEmails = false;
+            }
+        }
+        if (clearEmails) {
+            outState.remove(Intent.EXTRA_EMAIL);
+        }
+        */
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -474,6 +494,10 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     private List<InternetAddress> validateAndBuildRecipients() {
+        return validateAndBuildRecipients(true);
+    }
+
+    private List<InternetAddress> validateAndBuildRecipients(boolean setErrors) {
         DrawableRecipientChip[] chips = mChipsInput.getRecipients();
         if ((chips != null) && (chips.length > 0)) {
             List<InternetAddress> result = new ArrayList<>();
@@ -482,16 +506,20 @@ public class ComposeActivity extends AppCompatActivity {
                     InternetAddress address = new InternetAddress(chip.getEntry().getDestination(), chip.getEntry().getDisplayName());
                     result.add(address);
                 } catch (UnsupportedEncodingException e) {
-                    // TODO string
-                    mChipsInput.setError("Invalid address");
+                    if (setErrors) {
+                        // TODO string
+                        mChipsInput.setError("Invalid address");
+                    }
                 }
             }
             if (CollectionUtils.isNotEmpty(result)) {
                 return  result;
             }
         } else {
-            // TODO string
-            mChipsInput.setError("No recipients");
+            if (setErrors) {
+                // TODO string
+                mChipsInput.setError("No recipients");
+            }
         }
         return null;
     }

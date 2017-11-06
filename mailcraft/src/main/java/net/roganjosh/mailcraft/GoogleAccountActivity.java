@@ -52,13 +52,6 @@ public class GoogleAccountActivity extends AppCompatActivity implements GoogleAp
         // Views
         mStatusTextView = (TextView) findViewById(R.id.status);
 
-        // Button listeners
-        /*
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.disconnect_button).setOnClickListener(this);
-        */
-
         // [START configure_signin]
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -157,42 +150,6 @@ public class GoogleAccountActivity extends AppCompatActivity implements GoogleAp
                 editor.putString("credential_name", credential.getSelectedAccountName());
             }
             editor.commit();
-            /*
-            final GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(
-                    getApplicationContext(), Arrays.asList(GmailScopes.GMAIL_COMPOSE))
-                    .setBackOff(new ExponentialBackOff());
-            credential.setSelectedAccount(acct.getAccount());
-            if (credential != null) {
-                Log.d(TAG, "Account credential " + credential.getSelectedAccountName());
-
-                HttpTransport transport = AndroidHttp.newCompatibleTransport();
-                JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-                final Gmail service = new Gmail.Builder(transport, jsonFactory, credential)
-                        .setApplicationName(getResources().getString(R.string.app_name))
-                        .build();
-                Tasks.executeInBackground(this, new BackgroundWork<Boolean>() {
-                    @Override
-                    public Boolean doInBackground() throws Exception {
-                        sendGmailMessage(service, credential);
-                        return true;
-                    }
-                }, new Completion<Boolean>() {
-                    @Override
-                    public void onSuccess(Context context, Boolean result) {
-                        Toast.makeText(AltActivity.this, "Sent mail", Toast.LENGTH_LONG).show();
-                    }
-
-                    @Override
-                    public void onError(Context context, Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(AltActivity.this, "Failed! " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-
-            } else {
-                Log.d(TAG, "No account credential");
-            }
-            */
             updateUI(true);
         } else {
             // Signed out, show unauthenticated UI.
@@ -312,9 +269,6 @@ public class GoogleAccountActivity extends AppCompatActivity implements GoogleAp
     }
 
     public void onClickRevoke(View v) {
-        // TODO put this back
-        //revokeAccess();
-        Intent intent = new Intent(this, ComposeActivity.class);
-        startActivity(intent);
+        revokeAccess();
     }
 }
