@@ -137,10 +137,6 @@ public class GoogleAccountActivity extends AppCompatActivity implements GoogleAp
             mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             SharedPreferences sharedPreferences = getSharedPreferences("APP", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("isLogin", true);
-            editor.putString("name", acct.getDisplayName());
-            editor.putString("e_mail",acct.getEmail());
-            editor.putString("ID", acct.getId());
             final GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(
                     getApplicationContext(), Arrays.asList(GmailScopes.GMAIL_COMPOSE))
                     .setBackOff(new ExponentialBackOff());

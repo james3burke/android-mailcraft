@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 
 import com.android.ex.chips.BaseRecipientAdapter;
 import com.android.ex.chips.RecipientEditTextView;
-import com.android.ex.chips.RecipientEntry;
 import com.android.ex.chips.recipientchip.DrawableRecipientChip;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -81,7 +79,6 @@ public class ComposeActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,10 +115,9 @@ public class ComposeActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("APP", MODE_PRIVATE);
         String email = sharedPreferences.getString("credential_name", null);
         if (StringUtils.isNotEmpty(email)) {
-            Log.d(TAG, "email " + email);
             mCredential = getGoogleAccountCredential(email);
             if ((mCredential != null) && (mCredential.getSelectedAccountName() != null)) {
-                //testEmail(mCredential);
+                Log.d(TAG, "Signed in as " + mCredential.getSelectedAccountName());
             } else {
                 Log.d(TAG, "No account credential");
             }
@@ -149,12 +145,20 @@ public class ComposeActivity extends AppCompatActivity {
                 rqRecipients = savedInstanceState.getStringArrayList(Intent.EXTRA_EMAIL);
                 rqHtml = savedInstanceState.getString(Intent.EXTRA_HTML_TEXT);
                 rqMessage = savedInstanceState.getString(MESSAGE_TEXT);
-            } else {
-                Log.d(TAG, "OnCreate with no intent or state");
             }
             if (CollectionUtils.isNotEmpty(rqRecipients)) {
                 Log.d(TAG, "Recipients list: " + rqRecipients);
-                // TODO populate recipients as chips
+                for (String rqRecipient : rqRecipients) {
+                    try {
+                        InternetAddress ia = new InternetAddress(rqRecipient);
+                        if (ia != null) {
+                            mChipsInput.submitItem(ia.getPersonal(), ia.getAddress());
+                        }
+                    } catch (AddressException e) {
+                        Log.e(TAG, "Failed to handle recipient: " + rqRecipient);
+                    }
+
+                }
             }
             if (StringUtils.isNotEmpty(rqSubject)) {
                 mSubject.setText(rqSubject);
@@ -170,7 +174,6 @@ public class ComposeActivity extends AppCompatActivity {
                 mMessage.setText(rqMessage);
             }
         } else {
-            Toast.makeText(this, "No previous signin", Toast.LENGTH_LONG);
             doActionManageAccount();
         }
     }
@@ -189,35 +192,6 @@ public class ComposeActivity extends AppCompatActivity {
             Log.d(TAG, "Clearing instance state");
             outState.remove(Intent.EXTRA_HTML_TEXT);
         }
-        /*
-        if (mSubject.getText() != null) {
-            outState.putString(Intent.EXTRA_SUBJECT, mSubject.getText().toString());
-        } else {
-            outState.remove(Intent.EXTRA_SUBJECT);
-        }
-        if (mMessage.getText() != null) {
-            outState.putString(MESSAGE_TEXT, mMessage.getText().toString());
-        } else {
-            outState.remove(MESSAGE_TEXT);
-        }
-        */
-        /*
-        boolean clearEmails = true;
-        if ((mChipsInput.getRecipients() != null) && (mChipsInput.getRecipients().length > 0)) {
-            List<InternetAddress> recipients = validateAndBuildRecipients(false);
-            if (CollectionUtils.isNotEmpty(recipients)) {
-                List<String> emails = new ArrayList<>();
-                for (InternetAddress recipient : recipients) {
-                    emails.add(recipient.toString());
-                }
-                outState.putStringArray(Intent.EXTRA_EMAIL, emails.toArray(new String[emails.size()]));
-                clearEmails = false;
-            }
-        }
-        if (clearEmails) {
-            outState.remove(Intent.EXTRA_EMAIL);
-        }
-        */
         super.onSaveInstanceState(outState);
     }
 
