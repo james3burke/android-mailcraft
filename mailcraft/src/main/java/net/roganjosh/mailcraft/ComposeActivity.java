@@ -323,7 +323,10 @@ public class ComposeActivity extends AppCompatActivity {
                 model.setTextContent(model.getMessage());
             }
             if (StringUtils.isNotEmpty(model.getHtmlContent())) {
-                model.setHtmlContent(model.getHtmlContent().replace("<body>", "<body><p>" + StringEscapeUtils.escapeHtml4(model.getMessage()) + "</p>"));
+                String insertHtml = prepareInsertMessage(model.getMessage());
+                if (StringUtils.isNotEmpty(insertHtml)) {
+                    model.setHtmlContent(model.getHtmlContent().replace("<body>", "<body>" + insertHtml));
+                }
             }
         }
         if (StringUtils.isNotEmpty(model.getHtmlContent())) {
@@ -331,6 +334,21 @@ public class ComposeActivity extends AppCompatActivity {
         } else {
             return createSimpleEmail(model.getRecipients(), model.getSender(), model.getSubject(), model.getTextContent());
         }
+    }
+
+    private static String prepareInsertMessage(String message) {
+        String[] lines = message.split("\n");
+        if ((lines != null) && (lines.length > 0)) {
+            StringBuilder sb = new StringBuilder();
+            for (String line : lines) {
+                sb.append("<p>");
+                sb.append(StringEscapeUtils.escapeHtml4(line));
+                sb.append("</p>");
+                sb.append("\n");
+            }
+            return sb.toString();
+        }
+        return null;
     }
 
     /**
