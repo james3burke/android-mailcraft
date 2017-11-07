@@ -23,7 +23,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/et_subject"
-            android:hint="subject"/>
+            android:hint="@string/hint_subject"/>
 
         <EditText
             android:layout_width="fill_parent"
@@ -31,14 +31,18 @@
             android:id="@+id/et_message"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:hint="message"
+            android:hint="@string/hint_message"
+            android:minLines="2"
             android:inputType="text|textCapSentences|textMultiLine|textAutoCorrect"/>
 
         <WebView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/wv_card"
-            android:background="@color/blue_grey_500"/>
+            android:background="@color/blue_grey_500"
+            />
+        <!-- to remove horizontal scrolling -->
+        <!-- android:scrollbars="none" -->
 
     </LinearLayout>
 

@@ -55,6 +55,8 @@
     <string name="msg_contacts_failed">Get contacts failed.</string>
 
     <string name="hint_recipients">To</string>
+    <string name="hint_subject">Subject</string>
+    <string name="hint_message">Message</string>
     <string name="action_send">Send</string>
     <string name="action_account">Account</string>
     <string name="action_discard">Discard</string>

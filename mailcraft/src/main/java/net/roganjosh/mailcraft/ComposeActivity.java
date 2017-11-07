@@ -106,6 +106,12 @@ public class ComposeActivity extends AppCompatActivity {
         mSubject = (EditText)findViewById(R.id.et_subject);
         mMessage = (EditText)findViewById(R.id.et_message);
         mWebCard = (WebView)findViewById(R.id.wv_card);
+        /*
+        mWebCard.getSettings().setBuiltInZoomControls(true);
+        mWebCard.getSettings().setSupportZoom(true);
+        mWebCard.getSettings().setUseWideViewPort(true);
+        mWebCard.getSettings().setLoadWithOverviewMode(false);
+        */
 
         init(getIntent(), savedInstanceState);
     }
