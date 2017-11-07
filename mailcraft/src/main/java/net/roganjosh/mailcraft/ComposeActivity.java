@@ -241,6 +241,9 @@ public class ComposeActivity extends AppCompatActivity {
         } else if ((R.id.action_send_email == item.getItemId()) && (!mSendingInProgress)) {
             doActionSendEmail();
             return true;
+        } else if (R.id.action_discard == item.getItemId()) {
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
