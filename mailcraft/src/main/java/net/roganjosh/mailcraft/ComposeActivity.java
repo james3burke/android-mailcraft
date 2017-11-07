@@ -214,7 +214,6 @@ public class ComposeActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.d(TAG, "Menu clicked: " + item);
         if (R.id.action_manage_account == item.getItemId()) {
             doActionManageAccount();
             return true;
@@ -245,7 +244,12 @@ public class ComposeActivity extends AppCompatActivity {
                     return;
                 }
             } catch (MessagingException e) {
-                Toast.makeText(this, "Failed to build email", Toast.LENGTH_LONG);
+                Log.e(TAG, "Error creating email", e);
+                String errorMsg = e.getMessage();
+                if (StringUtils.isEmpty(errorMsg)) {
+                    errorMsg = getString(R.string.error_email_building);
+                }
+                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
             }
         }
         mSendingInProgress = false;
@@ -277,7 +281,7 @@ public class ComposeActivity extends AppCompatActivity {
             BaseRecipientAdapter baseRecipientAdapter = new BaseRecipientAdapter(BaseRecipientAdapter.QUERY_TYPE_EMAIL, this);
             mChipsInput.setAdapter(baseRecipientAdapter);
         } else if (EasyPermissions.somePermissionPermanentlyDenied(this, Arrays.asList(PERMISSIONS))) {
-            Toast.makeText(this, "No access to contacts", Toast.LENGTH_SHORT);
+            Toast.makeText(this, getString(R.string.permission_denied_contacts), Toast.LENGTH_SHORT).show();
         } else {
             EasyPermissions.requestPermissions(this, getString(R.string.rationale_read_contacts), READ_CONTACTS_ALLOWED, PERMISSIONS);
         }
@@ -300,12 +304,12 @@ public class ComposeActivity extends AppCompatActivity {
         }, new Completion<Message>() {
             @Override
             public void onSuccess(Context context, Message result) {
-                Toast.makeText(ComposeActivity.this, "Message sent", Toast.LENGTH_LONG).show();
+                Toast.makeText(ComposeActivity.this, getString(R.string.success_sent), Toast.LENGTH_LONG).show();
                 finish();
             }
             @Override
             public void onError(Context context, Exception e) {
-                Toast.makeText(ComposeActivity.this, "Failed to send message", Toast.LENGTH_LONG).show();
+                Toast.makeText(ComposeActivity.this, getString(R.string.error_failed_to_send), Toast.LENGTH_LONG).show();
                 mSendingInProgress = false;
             }
         });
@@ -345,7 +349,11 @@ public class ComposeActivity extends AppCompatActivity {
 
         MimeMessage email = new MimeMessage(session);
         email = addHeaderInfo(email, from, to, subject);
-        email.setText(bodyText);
+        if (StringUtils.isNotEmpty(bodyText)) {
+            email.setText(bodyText);
+        } else {
+            email.setText("");
+        }
         return email;
     }
 
@@ -450,7 +458,7 @@ public class ComposeActivity extends AppCompatActivity {
         try {
             mailModel.setSender(new InternetAddress(sender));
         } catch (AddressException e) {
-            Toast.makeText(this, "Your account is not able to send email", Toast.LENGTH_LONG);
+            Toast.makeText(this, getString(R.string.error_unable_to_send), Toast.LENGTH_LONG).show();
             return null;
         }
         List<InternetAddress> recipients = validateAndBuildRecipients();
@@ -490,8 +498,7 @@ public class ComposeActivity extends AppCompatActivity {
                     result.add(address);
                 } catch (UnsupportedEncodingException e) {
                     if (setErrors) {
-                        // TODO string
-                        mChipsInput.setError("Invalid address");
+                        mChipsInput.setError(getString(R.string.validation_invalid_email));
                     }
                 }
             }
@@ -500,8 +507,7 @@ public class ComposeActivity extends AppCompatActivity {
             }
         } else {
             if (setErrors) {
-                // TODO string
-                mChipsInput.setError("No recipients");
+                mChipsInput.setError(getString(R.string.validation_no_recipients));
             }
         }
         return null;

@@ -34,25 +34,12 @@
     <string name="desc_google_icon">Google Logo</string>
 
     <!-- Rationale for asking for Contacts -->
-    <string name="contacts_permission_rationale">Contacts access is needed in order to retrieve your email address.</string>
+    <string name="contacts_permission_rationale">Contacts access is needed in order to retrieve your email addresses.</string>
 
     <!-- Activity Names and Descriptions -->
     <string name="name_sign_in_activity">SignInActivity</string>
     <string name="desc_sign_in_activity">Signing in, signing out, and revoking access.</string>
     <string name="desc_sign_in_activity_scopes">Signing in, signing out, and revoking access with Google Drive permissions.</string>
-
-    <string name="name_id_token_activity">IdTokenActivity</string>
-    <string name="desc_id_token_activity">Retrieving an ID Token for the user.</string>
-
-    <string name="desc_auth_code_activity">Demonstrate retrieving an auth code for authorizing your server.</string>
-    <string name="name_auth_code_activity">ServerAuthCodeActivity</string>
-
-    <string name="desc_rest_activity">Demonstrate using Google Sign In with a Google REST API</string>
-    <string name="name_rest_activity">RestApiActivity</string>
-
-    <!-- Messages for the Rest API activity -->
-    <string name="connections_fmt">Connections: %1$s</string>
-    <string name="msg_contacts_failed">Get contacts failed.</string>
 
     <string name="hint_recipients">To</string>
     <string name="hint_subject">Subject</string>
@@ -61,5 +48,13 @@
     <string name="action_account">Account</string>
     <string name="action_discard">Discard</string>
 
+    <string name="validation_no_recipients">No recipients</string>
+    <string name="validation_invalid_email">Invalid email</string>
+
+    <string name="error_unable_to_send">Your account is not able to send email</string>
+    <string name="error_failed_to_send">Failed to send message</string>
+    <string name="error_email_building">Failed to build email</string>
+    <string name="success_sent">Message sent</string>
+    <string name="permission_denied_contacts">No access to contacts</string>
 
 </resources>
