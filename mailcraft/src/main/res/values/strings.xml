@@ -4,4 +4,57 @@
     <string name="title_activity_compose">ComposeActivity</string>
 
     <string name="rationale_read_contacts">Please allow access to your contacts</string>
+    <string name="title_activity_google_account">Account</string>
+    <string name="title_text">Google Account Sign-In</string>
+
+    <!-- Sign-in status messages -->
+    <string name="signed_in_fmt">Signed in as: %s</string>
+    <string name="signed_in">Signed in</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="signed_out">Signed out</string>
+    <string name="signed_in_err">"Error: please check logs."</string>
+    <string name="error_null_person">
+        Error: Plus.PeopleApi.getCurrentPerson returned null. Ensure that the Google+ API is
+        enabled for your project, you have a properly configured google-services.json file
+        and that your device has an internet connection.
+    </string>
+    <string name="loading">Loading…</string>
+    <string name="auth_code_fmt">Auth Code: %s</string>
+    <string name="id_token_fmt">ID Token: %s</string>
+
+    <!-- Google Play Services error for Toast -->
+    <string name="play_services_error_fmt">Google Play Services Error: %i</string>
+
+    <!-- Button labels -->
+    <string name="sign_out">Sign Out</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="refresh_token">Get Fresh Token</string>
+
+    <!-- Content Description for images -->
+    <string name="desc_google_icon">Google Logo</string>
+
+    <!-- Rationale for asking for Contacts -->
+    <string name="contacts_permission_rationale">Contacts access is needed in order to retrieve your email addresses.</string>
+
+    <!-- Activity Names and Descriptions -->
+    <string name="name_sign_in_activity">SignInActivity</string>
+    <string name="desc_sign_in_activity">Signing in, signing out, and revoking access.</string>
+    <string name="desc_sign_in_activity_scopes">Signing in, signing out, and revoking access with Google Drive permissions.</string>
+
+    <string name="hint_recipients">To</string>
+    <string name="hint_subject">Subject</string>
+    <string name="hint_message">Message</string>
+    <string name="action_send">Send</string>
+    <string name="action_account">Account</string>
+    <string name="action_discard">Discard</string>
+
+    <string name="validation_no_recipients">No recipients</string>
+    <string name="validation_invalid_email">Invalid email</string>
+
+    <string name="error_unable_to_send">Your account is not able to send email</string>
+    <string name="error_failed_to_send">Failed to send message</string>
+    <string name="error_email_building">Failed to build email</string>
+    <string name="success_sent">Message sent</string>
+    <string name="permission_denied_contacts">No access to contacts</string>
+
 </resources>

@@ -8,10 +8,42 @@
     tools:context="net.roganjosh.mailcraft.ComposeActivity"
     tools:showIn="@layout/activity_compose">
 
-    <com.pchmn.materialchips.ChipsInput
-        android:id="@+id/ci_recipients"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:hint="Enter a name" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.android.ex.chips.RecipientEditTextView
+            android:id="@+id/retv_recipients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_recipients"/>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/et_subject"
+            android:hint="@string/hint_subject"/>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/et_message"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:hint="@string/hint_message"
+            android:minLines="2"
+            android:inputType="text|textCapSentences|textMultiLine|textAutoCorrect"/>
+
+        <WebView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wv_card"
+            android:background="@color/blue_grey_500"
+            />
+        <!-- to remove horizontal scrolling -->
+        <!-- android:scrollbars="none" -->
+
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
