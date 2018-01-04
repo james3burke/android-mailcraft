@@ -31,6 +31,9 @@ import java.util.Arrays;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+/**
+ * Based on https://developers.google.com/identity/sign-in/android/sign-in
+ */
 public class GoogleAccountActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "SignInActivity";
