@@ -112,6 +112,60 @@ public class ComposeActivity extends AppCompatActivity {
 
     protected void init(Intent request, Bundle savedInstanceState) {
         prepareContacts();
+
+        String rqText = null;
+        String rqHtml = null;
+        String rqSubject = null;
+        List<String> rqRecipients = null;
+        String rqMessage = null;
+        if (request != null) {
+            Log.d(TAG, "Receiving send intent");
+            rqText = request.getStringExtra(Intent.EXTRA_TEXT);
+            rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
+            rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
+            rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
+            if (StringUtils.isEmpty(rqHtml)) {
+                rqMessage = rqText;
+                rqText = null;
+            } else {
+                rqMessage = null;
+            }
+        } else if (savedInstanceState != null) {
+            Log.d(TAG, "Restoring state");
+            rqText = savedInstanceState.getString(Intent.EXTRA_TEXT);
+            rqSubject = savedInstanceState.getString(Intent.EXTRA_SUBJECT);
+            rqRecipients = savedInstanceState.getStringArrayList(Intent.EXTRA_EMAIL);
+            rqHtml = savedInstanceState.getString(Intent.EXTRA_HTML_TEXT);
+            rqMessage = savedInstanceState.getString(MESSAGE_TEXT);
+        }
+        if (CollectionUtils.isNotEmpty(rqRecipients)) {
+            Log.d(TAG, "Recipients list: " + rqRecipients);
+            for (String rqRecipient : rqRecipients) {
+                try {
+                    InternetAddress ia = new InternetAddress(rqRecipient);
+                    if (ia != null) {
+                        mChipsInput.submitItem(ia.getPersonal(), ia.getAddress());
+                    }
+                } catch (AddressException e) {
+                    Log.e(TAG, "Failed to handle recipient: " + rqRecipient);
+                }
+
+            }
+        }
+        if (StringUtils.isNotEmpty(rqSubject)) {
+            mSubject.setText(rqSubject);
+        }
+        if (StringUtils.isNotEmpty(rqHtml)) {
+            mHtmlContent = rqHtml;
+            mAltText = rqText;
+            mWebCard.loadData(rqHtml, "text/html", "UTF-8");
+        } else {
+            mWebCard.setVisibility(View.GONE);
+        }
+        if (rqMessage != null) {
+            mMessage.setText(rqMessage);
+        }
+
         SharedPreferences sharedPreferences = getSharedPreferences("APP", MODE_PRIVATE);
         String email = sharedPreferences.getString("credential_name", null);
         if (StringUtils.isNotEmpty(email)) {
@@ -120,58 +174,6 @@ public class ComposeActivity extends AppCompatActivity {
                 Log.d(TAG, "Signed in as " + mCredential.getSelectedAccountName());
             } else {
                 Log.d(TAG, "No account credential");
-            }
-            String rqText = null;
-            String rqHtml = null;
-            String rqSubject = null;
-            List<String> rqRecipients = null;
-            String rqMessage = null;
-            if ((request != null) && (Intent.ACTION_SEND == request.getAction())) {
-                Log.d(TAG, "Receiving send intent");
-                rqText = request.getStringExtra(Intent.EXTRA_TEXT);
-                rqSubject = request.getStringExtra(Intent.EXTRA_SUBJECT);
-                rqRecipients = request.getStringArrayListExtra(Intent.EXTRA_EMAIL);
-                rqHtml = request.getStringExtra(Intent.EXTRA_HTML_TEXT);
-                if (StringUtils.isEmpty(rqHtml)) {
-                    rqMessage = rqText;
-                    rqText = null;
-                } else {
-                    rqMessage = null;
-                }
-            } else if (savedInstanceState != null) {
-                Log.d(TAG, "Restoring state");
-                rqText = savedInstanceState.getString(Intent.EXTRA_TEXT);
-                rqSubject = savedInstanceState.getString(Intent.EXTRA_SUBJECT);
-                rqRecipients = savedInstanceState.getStringArrayList(Intent.EXTRA_EMAIL);
-                rqHtml = savedInstanceState.getString(Intent.EXTRA_HTML_TEXT);
-                rqMessage = savedInstanceState.getString(MESSAGE_TEXT);
-            }
-            if (CollectionUtils.isNotEmpty(rqRecipients)) {
-                Log.d(TAG, "Recipients list: " + rqRecipients);
-                for (String rqRecipient : rqRecipients) {
-                    try {
-                        InternetAddress ia = new InternetAddress(rqRecipient);
-                        if (ia != null) {
-                            mChipsInput.submitItem(ia.getPersonal(), ia.getAddress());
-                        }
-                    } catch (AddressException e) {
-                        Log.e(TAG, "Failed to handle recipient: " + rqRecipient);
-                    }
-
-                }
-            }
-            if (StringUtils.isNotEmpty(rqSubject)) {
-                mSubject.setText(rqSubject);
-            }
-            if (StringUtils.isNotEmpty(rqHtml)) {
-                mHtmlContent = rqHtml;
-                mAltText = rqText;
-                mWebCard.loadData(rqHtml, "text/html", "UTF-8");
-            } else {
-                mWebCard.setVisibility(View.GONE);
-            }
-            if (rqMessage != null) {
-                mMessage.setText(rqMessage);
             }
         } else {
             doActionManageAccount();
