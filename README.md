@@ -1,8 +1,8 @@
-#Mailcraft
+# Mailcraft
 
 Mailcraft adds a compose activity from which you can send gmail messages. The extra feature this offers over using gmail directly is that you can attach an html section to the email that you send
 
-##Installation
+## Installation
 
 Add jitpack to your project build.gradle
 
@@ -17,9 +17,9 @@ allprojects {
 
 Once you've added jitpack you can add the dependency to
 
-`compile 'com.github.james3burke:android-mailcraft:0.1.1'`
+`compile 'com.github.james3burke:android-mailcraft:0.1.2'`
 
-##Configuration
+## Configuration
 
 You need to add two activities to your AndroidManifest
 
@@ -39,7 +39,7 @@ In order for mailcraft to be able to send gmail messages you will need to config
 
 https://developers.google.com/gmail/api/quickstart/android
 
-##Usage
+## Usage
 
 You can start the ComposeActivity to allow the user to compose and send an email. You can also optionally set the subject, recipients and html section.
 
